@@ -96,11 +96,24 @@ pipeline {
                     credentialsId: "${KUBE_CREDS}",
                     serverUrl: 'https://lb.kubesphere.local:6443'
                 ) {
-                   sh """
+                    sh """
+                    set -e
+
                     kubectl get ns ${KUBE_NAMESPACE} || kubectl create ns ${KUBE_NAMESPACE}
-                    kubectl apply -n ${KUBE_NAMESPACE} -f kubernetes/deploymentservice.yaml
-                    kubectl apply -n ${KUBE_NAMESPACE} -f kubernetes/df-ingress.yaml
-                    kubectl rollout status rollout/${APP_NAME} -n ${KUBE_NAMESPACE}
+
+                    kubectl apply -n ${KUBE_NAMESPACE} \
+                      -f kubernetes/deploymentservice.yaml
+
+                    kubectl apply -n ${KUBE_NAMESPACE} \
+                      -f kubernetes/df-ingress.yaml
+
+                    # Verify Argo Rollouts plugin exists
+                    kubectl argo rollouts version
+
+                    # Wait for rollout to complete
+                    kubectl argo rollouts status ${APP_NAME} \
+                      -n ${KUBE_NAMESPACE} \
+                      --timeout 300s
                     """
                 }
             }
