@@ -26,7 +26,7 @@ pipeline {
         stage('Code Checkout') {
             steps {
                 withCredentials([usernamePassword(credentialsId: "${GITHUB_CREDENTIALS}", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                    git branch: 'master', credentialsId: "${GITHUB_CREDENTIALS}", url: 'https://github.com/TorusDev2023/ClaimsUF.git'
+                    git branch: 'master', credentialsId: "${GITHUB_CREDENTIALS}", url: 'https://github.com/kuttit/VPGH-CLAUDE.git'
                 }
             }
         }
