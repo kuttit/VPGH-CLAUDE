@@ -2,21 +2,23 @@ pipeline {
     agent {
         label 'slave-224'
     }
+
     tools {
-        jdk 'jdk17' 
+        jdk 'jdk17'
         nodejs 'Node20.0.0'
     }
+
     environment {
         DOCKERHUB_USERNAME = "192.168.2.164:5000"
         APP_NAME = "ct308-gph-vgph-df-v1"
         IMAGE_NAME = "${DOCKERHUB_USERNAME}/${APP_NAME}"
-        BUILD_NUMBER = "${BUILD_NUMBER}"
-        GITHUB_CREDENTIALS = "GIT_HUB_PAT"
         IMAGE_TAG = "${BUILD_NUMBER}"
+        GITHUB_CREDENTIALS = "GIT_HUB_PAT"
         SCANNER_HOME = tool 'sonar-scanner'
     }
 
     stages {
+
         stage('Clean Workspace') {
             steps {
                 cleanWs()
@@ -25,22 +27,28 @@ pipeline {
 
         stage('Code Checkout') {
             steps {
-                withCredentials([usernamePassword(credentialsId: "${GITHUB_CREDENTIALS}", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
-                    git branch: 'master', credentialsId: "${GITHUB_CREDENTIALS}", url: 'https://github.com/kuttit/VPGH-CLAUDE.git'
-                }
+                git branch: 'master',
+                    credentialsId: "${GITHUB_CREDENTIALS}",
+                    url: 'https://github.com/kuttit/VPGH-CLAUDE.git'
             }
         }
 
-        stage('Detect Changes in tt390 App') {
+        stage('Detect Changes in payment-rails-api') {
             steps {
                 script {
-                    def diff = sh(script: "git diff --name-only HEAD~1 HEAD", returnStdout: true).trim()
-                    if (diff.split('\n').any { it.startsWith('apps/TT390/IT/RF/v1/Nest-df/') }) {
+                    def diff = sh(
+                        script: "git diff --name-only HEAD~1 HEAD",
+                        returnStdout: true
+                    ).trim()
+
+                    if (diff.split('\n').any { 
+                        it.startsWith('payment-rails-api/') 
+                    }) {
                         env.NEST_DF_CHANGED = "true"
-                        echo "Changes detected in apps/TT390/IT/RF/v1/Nest-df"
+                        echo "Changes detected in payment-rails-api"
                     } else {
                         env.NEST_DF_CHANGED = "false"
-                        echo "No changes in apps/TT390/IT/RF/v1/Nest-df. Skipping build and deployment stages."
+                        echo "No changes in payment-rails-api. Skipping build & deploy."
                     }
                 }
             }
@@ -48,7 +56,7 @@ pipeline {
 
         stage('Docker Buildx & Push') {
             when {
-                expression { return env.NEST_DF_CHANGED == "true" }
+                expression { env.NEST_DF_CHANGED == "true" }
             }
             steps {
                 script {
@@ -56,12 +64,12 @@ pipeline {
                         sh """
                         export DOCKER_BUILDKIT=1
                         docker buildx use default
-                        
+
                         docker buildx build \
                           --build-arg BUILDKIT_INLINE_CACHE=1 \
                           --tag ${IMAGE_NAME}:${IMAGE_TAG} \
-                          --file apps/TT390/IT/RF/v1/Nest-df/Dockerfile \
-                          apps/TT390/IT/RF/v1/Nest-df \
+                          --file payment-rails-api/Dockerfile \
+                          payment-rails-api \
                           --push
                         """
                     }
@@ -71,33 +79,35 @@ pipeline {
 
         stage('Update Kubernetes Deployment File') {
             when {
-                expression { return env.NEST_DF_CHANGED == "true" }
+                expression { env.NEST_DF_CHANGED == "true" }
             }
             steps {
-                script {
-                    sh "sed -i 's/docker_tag/${IMAGE_TAG}/g' apps/TT390/IT/RF/v1/Nest-df/kubernetes/deploymentservice.yaml"
-                }
+                sh """
+                sed -i 's/docker_tag/${IMAGE_TAG}/g' \
+                payment-rails-api/kubernetes/deploymentservice.yaml
+                """
             }
         }
 
         stage('Deploy to Kubernetes') {
             when {
-                expression { return env.NEST_DF_CHANGED == "true" }
+                expression { env.NEST_DF_CHANGED == "true" }
             }
             steps {
-                script {
-                    withKubeConfig(credentialsId: 'kubernetes-224', serverUrl: 'https://lb.kubesphere.local:6443') {
-                        sh "kubectl get ns tt390-rf-df-v1 || kubectl create ns tt390-rf-df-v1"
-                        sh "kubectl apply -f apps/TT390/IT/RF/v1/Nest-df/kubernetes/deploymentservice.yaml"
-                        sh "kubectl apply -f apps/TT390/IT/RF/v1/Nest-df/kubernetes/df-ingress.yaml"                        
-                    }
+                withKubeConfig(
+                    credentialsId: 'kubernetes-224',
+                    serverUrl: 'https://lb.kubesphere.local:6443'
+                ) {
+                    sh "kubectl get ns ct308-gph-vgph-v1 || kubectl create ns ct308-gph-vgph-v1"
+                    sh "kubectl apply -f payment-rails-api/kubernetes/deploymentservice.yaml"
+                    sh "kubectl apply -f payment-rails-api/kubernetes/df-ingress.yaml"
                 }
             }
         }
 
         stage('Remove Previous Build Image') {
             when {
-                expression { return env.NEST_DF_CHANGED == "true" }
+                expression { env.NEST_DF_CHANGED == "true" }
             }
             steps {
                 script {
