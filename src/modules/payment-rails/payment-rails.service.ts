@@ -2,7 +2,6 @@ import { Injectable, NotFoundException, ConflictException, Logger } from '@nestj
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreatePaymentRailDto } from './dto/create-payment-rail.dto';
 import { UpdatePaymentRailDto } from './dto/update-payment-rail.dto';
-import { Prisma } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 @Injectable()
@@ -28,7 +27,7 @@ export class PaymentRailsService {
   }
 
   async findAll(skip?: number, take?: number, isActive?: boolean) {
-    const where: Prisma.PaymentRailWhereInput = {};
+    const where: { isActive?: boolean } = {};
     if (isActive !== undefined) {
       where.isActive = isActive;
     }

@@ -2,8 +2,33 @@ import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreatePaymentTransactionDto } from './dto/create-payment-transaction.dto';
 import { UpdatePaymentTransactionDto } from './dto/update-payment-transaction.dto';
-import { Prisma, TransactionStatus } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+
+// Enums matching Prisma schema
+enum TransactionStatus {
+  INITIATED = 'INITIATED',
+  VALIDATED = 'VALIDATED',
+  PENDING_APPROVAL = 'PENDING_APPROVAL',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+  PROCESSING = 'PROCESSING',
+  SENT_TO_RAIL = 'SENT_TO_RAIL',
+  ACKNOWLEDGED = 'ACKNOWLEDGED',
+  SETTLED = 'SETTLED',
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED',
+  CANCELLED = 'CANCELLED',
+  RETURNED = 'RETURNED',
+  SUSPICIOUS = 'SUSPICIOUS',
+  ON_HOLD = 'ON_HOLD',
+  PENDING_REVIEW = 'PENDING_REVIEW',
+}
+
+enum PaymentDirection {
+  INBOUND = 'INBOUND',
+  OUTBOUND = 'OUTBOUND',
+  INTERNAL = 'INTERNAL',
+}
 
 @Injectable()
 export class PaymentTransactionsService {
@@ -38,7 +63,7 @@ export class PaymentTransactionsService {
     railId?: string,
     direction?: string,
   ) {
-    const where: Prisma.PaymentTransactionWhereInput = {};
+    const where: { status?: TransactionStatus; railId?: string; direction?: PaymentDirection } = {};
 
     if (status) {
       where.status = status;
@@ -47,7 +72,7 @@ export class PaymentTransactionsService {
       where.railId = railId;
     }
     if (direction) {
-      where.direction = direction as any;
+      where.direction = direction as PaymentDirection;
     }
 
     const [data, total] = await Promise.all([
