@@ -9,7 +9,7 @@ pipeline {
 
     environment {
         REGISTRY       = "192.168.2.164:5000"
-        APP_NAME       = "ct308-gph001-vgph001-df-v1"
+        APP_NAME       = "ct308-gph001-vgph001-df"
         IMAGE_NAME     = "${REGISTRY}/${APP_NAME}"
         IMAGE_TAG      = "${BUILD_NUMBER}"
         GIT_CREDS      = "GIT_HUB_PAT"
@@ -100,7 +100,7 @@ pipeline {
                     kubectl get ns ${KUBE_NAMESPACE} || kubectl create ns ${KUBE_NAMESPACE}
                     kubectl apply -n ${KUBE_NAMESPACE} -f kubernetes/deploymentservice.yaml
                     kubectl apply -n ${KUBE_NAMESPACE} -f kubernetes/df-ingress.yaml
-                    kubectl rollout status deployment/${APP_NAME} -n ${KUBE_NAMESPACE}
+                    kubectl rollout status rollout/${APP_NAME} \ -n ${KUBE_NAMESPACE}
                     """
                 }
             }
