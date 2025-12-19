@@ -34,7 +34,7 @@ pipeline {
             steps {
                 script {
                     def changedFiles = sh(
-                        script: "git diff --name-only HEAD~1 || true",
+                        script: "git diff --name-only HEAD~1 HEAD || true",
                         returnStdout: true
                     ).trim()
 
