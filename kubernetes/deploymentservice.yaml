@@ -1,10 +1,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
-  name: ct308-gph001-vgph001-df-generator
+  name: ct308-gph001-vgph001-df
   namespace: ct308-gph001-vgph001-v1
   labels:
-    app: ct308-gph001-vgph001-df-generator
+    app: ct308-gph001-vgph001-df
 spec:
   replicas: 1
   strategy:
@@ -19,11 +19,11 @@ spec:
         - setWeight: 100
   selector:
     matchLabels:
-      app: ct308-gph001-vgph001-df-generator
+      app: ct308-gph001-vgph001-df
   template:
     metadata:
       labels:
-        app: ct308-gph001-vgph001-df-generator
+        app: ct308-gph001-vgph001-df
     spec:
       containers:
         - name: ct308-gph001-vgph001-df-generator-backend
@@ -42,13 +42,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: ct308-gph001-vgph001-df-generator
+  name: ct308-gph001-vgph001-df
   namespace: ct308-gph001-vgph001-v1
   labels:
-    app: ct308-gph001-vgph001-df-generator
+    app: ct308-gph001-vgph001-df
 spec:
   selector:
-    app: ct308-gph001-vgph001-df-generator
+    app: ct308-gph001-vgph001-df
   ports:
     - name: http
       protocol: TCP
