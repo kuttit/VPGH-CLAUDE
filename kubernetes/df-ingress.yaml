@@ -17,7 +17,7 @@ spec:
     - host: tgadev.toruslowcode.com
       http:
         paths:
-          - path: /ct308/gph/vgph/v1/api(/|$)(.*)
+          - path: /ct308/gph001/vgph001/v1/api(/|$)(.*)
             pathType: ImplementationSpecific
             backend:
               service:
