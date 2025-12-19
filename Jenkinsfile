@@ -3,6 +3,10 @@ pipeline {
         label 'slave-224'
     }
 
+    options {
+        skipDefaultCheckout(true)
+    }
+
     environment {
         REGISTRY          = "192.168.2.164:5000"
         APP_NAME          = "ct308-gph-vgph-df-v1"
