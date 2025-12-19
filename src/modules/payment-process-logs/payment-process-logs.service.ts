@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreatePaymentProcessLogDto } from './dto/create-payment-process-log.dto';
-import { Prisma } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class PaymentProcessLogsService {
@@ -75,7 +75,7 @@ export class PaymentProcessLogsService {
     try {
       return await this.prisma.paymentProcessLog.delete({ where: { id } });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+      if (error instanceof PrismaClientKnownRequestError && error.code === 'P2025') {
         throw new NotFoundException(`Payment process log with ID ${id} not found`);
       }
       throw error;

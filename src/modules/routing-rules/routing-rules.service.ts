@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, ConflictException, Logger } from '@nestj
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateRoutingRuleDto } from './dto/create-routing-rule.dto';
 import { UpdateRoutingRuleDto } from './dto/update-routing-rule.dto';
-import { Prisma } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class RoutingRulesService {
@@ -24,7 +24,7 @@ export class RoutingRulesService {
         },
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
           throw new ConflictException('Routing rule with this code already exists');
         }
@@ -134,7 +134,7 @@ export class RoutingRulesService {
         },
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
           throw new NotFoundException(`Routing rule with ID ${id} not found`);
         }
@@ -153,7 +153,7 @@ export class RoutingRulesService {
         where: { id },
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
           throw new NotFoundException(`Routing rule with ID ${id} not found`);
         }

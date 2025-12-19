@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreatePaymentErrorLogDto } from './dto/create-payment-error-log.dto';
 import { UpdatePaymentErrorLogDto } from './dto/update-payment-error-log.dto';
-import { Prisma } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class PaymentErrorLogsService {
@@ -67,7 +67,7 @@ export class PaymentErrorLogsService {
         include: { paymentTransaction: true },
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+      if (error instanceof PrismaClientKnownRequestError && error.code === 'P2025') {
         throw new NotFoundException(`Payment error log with ID ${id} not found`);
       }
       throw error;
@@ -78,7 +78,7 @@ export class PaymentErrorLogsService {
     try {
       return await this.prisma.paymentErrorLog.delete({ where: { id } });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+      if (error instanceof PrismaClientKnownRequestError && error.code === 'P2025') {
         throw new NotFoundException(`Payment error log with ID ${id} not found`);
       }
       throw error;

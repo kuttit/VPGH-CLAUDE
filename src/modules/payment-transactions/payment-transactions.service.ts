@@ -3,6 +3,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CreatePaymentTransactionDto } from './dto/create-payment-transaction.dto';
 import { UpdatePaymentTransactionDto } from './dto/update-payment-transaction.dto';
 import { Prisma, TransactionStatus } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class PaymentTransactionsService {
@@ -182,7 +183,7 @@ export class PaymentTransactionsService {
         },
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
           throw new NotFoundException(`Payment transaction with ID ${id} not found`);
         }
@@ -198,7 +199,7 @@ export class PaymentTransactionsService {
         where: { id },
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
           throw new NotFoundException(`Payment transaction with ID ${id} not found`);
         }

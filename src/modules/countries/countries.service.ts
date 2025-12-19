@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, ConflictException, Logger } from '@nestj
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateCountryDto } from './dto/create-country.dto';
 import { UpdateCountryDto } from './dto/update-country.dto';
-import { Prisma } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class CountriesService {
@@ -16,7 +16,7 @@ export class CountriesService {
         data: createCountryDto,
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
           throw new ConflictException('Country with this code already exists');
         }
@@ -76,7 +76,7 @@ export class CountriesService {
         data: updateCountryDto,
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
           throw new NotFoundException(`Country with ID ${id} not found`);
         }
@@ -95,7 +95,7 @@ export class CountriesService {
         where: { id },
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
           throw new NotFoundException(`Country with ID ${id} not found`);
         }

@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, ConflictException, Logger } from '@nestj
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateWorkflowStepTransitionDto } from './dto/create-workflow-step-transition.dto';
 import { UpdateWorkflowStepTransitionDto } from './dto/update-workflow-step-transition.dto';
-import { Prisma } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class WorkflowStepTransitionsService {
@@ -21,7 +21,7 @@ export class WorkflowStepTransitionsService {
         },
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2003') {
           throw new NotFoundException('Referenced workflow definition or step not found');
         }
@@ -108,7 +108,7 @@ export class WorkflowStepTransitionsService {
         },
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
           throw new NotFoundException(`Workflow step transition with ID ${id} not found`);
         }
@@ -124,7 +124,7 @@ export class WorkflowStepTransitionsService {
         where: { id },
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
           throw new NotFoundException(`Workflow step transition with ID ${id} not found`);
         }

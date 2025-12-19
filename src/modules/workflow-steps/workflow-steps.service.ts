@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, ConflictException, Logger } from '@nestj
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateWorkflowStepDto } from './dto/create-workflow-step.dto';
 import { UpdateWorkflowStepDto } from './dto/update-workflow-step.dto';
-import { Prisma } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class WorkflowStepsService {
@@ -19,7 +19,7 @@ export class WorkflowStepsService {
         },
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
           throw new ConflictException('Workflow step with this sequence or code already exists for the workflow');
         }
@@ -100,7 +100,7 @@ export class WorkflowStepsService {
         },
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
           throw new NotFoundException(`Workflow step with ID ${id} not found`);
         }
@@ -119,7 +119,7 @@ export class WorkflowStepsService {
         where: { id },
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
           throw new NotFoundException(`Workflow step with ID ${id} not found`);
         }

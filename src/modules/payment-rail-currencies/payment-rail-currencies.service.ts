@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, ConflictException, Logger } from '@nestj
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreatePaymentRailCurrencyDto } from './dto/create-payment-rail-currency.dto';
 import { UpdatePaymentRailCurrencyDto } from './dto/update-payment-rail-currency.dto';
-import { Prisma } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class PaymentRailCurrenciesService {
@@ -20,7 +20,7 @@ export class PaymentRailCurrenciesService {
         },
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
           throw new ConflictException('This rail-currency combination already exists');
         }
@@ -103,7 +103,7 @@ export class PaymentRailCurrenciesService {
         },
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
           throw new NotFoundException(`Payment rail currency with ID ${id} not found`);
         }
@@ -122,7 +122,7 @@ export class PaymentRailCurrenciesService {
         where: { id },
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
           throw new NotFoundException(`Payment rail currency with ID ${id} not found`);
         }

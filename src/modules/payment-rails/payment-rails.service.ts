@@ -3,6 +3,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CreatePaymentRailDto } from './dto/create-payment-rail.dto';
 import { UpdatePaymentRailDto } from './dto/update-payment-rail.dto';
 import { Prisma } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class PaymentRailsService {
@@ -16,7 +17,7 @@ export class PaymentRailsService {
         data: createPaymentRailDto,
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
           throw new ConflictException('Payment rail with this code already exists');
         }
@@ -103,7 +104,7 @@ export class PaymentRailsService {
         data: updatePaymentRailDto,
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
           throw new NotFoundException(`Payment rail with ID ${id} not found`);
         }
@@ -122,7 +123,7 @@ export class PaymentRailsService {
         where: { id },
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
           throw new NotFoundException(`Payment rail with ID ${id} not found`);
         }

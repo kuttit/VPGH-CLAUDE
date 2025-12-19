@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, ConflictException, Logger } from '@nestj
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreatePaymentRailCountryDto } from './dto/create-payment-rail-country.dto';
 import { UpdatePaymentRailCountryDto } from './dto/update-payment-rail-country.dto';
-import { Prisma } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class PaymentRailCountriesService {
@@ -20,7 +20,7 @@ export class PaymentRailCountriesService {
         },
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
           throw new ConflictException('This rail-country combination already exists');
         }
@@ -103,7 +103,7 @@ export class PaymentRailCountriesService {
         },
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
           throw new NotFoundException(`Payment rail country with ID ${id} not found`);
         }
@@ -122,7 +122,7 @@ export class PaymentRailCountriesService {
         where: { id },
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
           throw new NotFoundException(`Payment rail country with ID ${id} not found`);
         }

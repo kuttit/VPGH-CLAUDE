@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateTransactionPartyDto } from './dto/create-transaction-party.dto';
 import { UpdateTransactionPartyDto } from './dto/update-transaction-party.dto';
-import { Prisma } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class TransactionPartiesService {
@@ -20,7 +20,7 @@ export class TransactionPartiesService {
         },
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2003') {
           throw new NotFoundException('Referenced transaction or country not found');
         }
@@ -101,7 +101,7 @@ export class TransactionPartiesService {
         },
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
           throw new NotFoundException(`Transaction party with ID ${id} not found`);
         }
@@ -117,7 +117,7 @@ export class TransactionPartiesService {
         where: { id },
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
           throw new NotFoundException(`Transaction party with ID ${id} not found`);
         }

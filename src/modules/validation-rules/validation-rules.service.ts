@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, ConflictException, Logger } from '@nestj
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateValidationRuleDto } from './dto/create-validation-rule.dto';
 import { UpdateValidationRuleDto } from './dto/update-validation-rule.dto';
-import { Prisma } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class ValidationRulesService {
@@ -20,7 +20,7 @@ export class ValidationRulesService {
         },
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2003') {
           throw new NotFoundException('Referenced payment rail or product not found');
         }
@@ -102,7 +102,7 @@ export class ValidationRulesService {
         },
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
           throw new NotFoundException(`Validation rule with ID ${id} not found`);
         }
@@ -118,7 +118,7 @@ export class ValidationRulesService {
         where: { id },
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
           throw new NotFoundException(`Validation rule with ID ${id} not found`);
         }
