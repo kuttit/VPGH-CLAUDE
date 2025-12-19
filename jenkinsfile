@@ -1,0 +1,112 @@
+pipeline {
+    agent {
+        label 'slave-224'
+    }
+    tools {
+        jdk 'jdk17' 
+        nodejs 'Node20.0.0'
+    }
+    environment {
+        DOCKERHUB_USERNAME = "192.168.2.164:5000"
+        APP_NAME = "ct308-gph-vgph-df-v1"
+        IMAGE_NAME = "${DOCKERHUB_USERNAME}/${APP_NAME}"
+        BUILD_NUMBER = "${BUILD_NUMBER}"
+        GITHUB_CREDENTIALS = "GIT_HUB_PAT"
+        IMAGE_TAG = "${BUILD_NUMBER}"
+        SCANNER_HOME = tool 'sonar-scanner'
+    }
+
+    stages {
+        stage('Clean Workspace') {
+            steps {
+                cleanWs()
+            }
+        }
+
+        stage('Code Checkout') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: "${GITHUB_CREDENTIALS}", usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                    git branch: 'master', credentialsId: "${GITHUB_CREDENTIALS}", url: 'https://github.com/TorusDev2023/ClaimsUF.git'
+                }
+            }
+        }
+
+        stage('Detect Changes in tt390 App') {
+            steps {
+                script {
+                    def diff = sh(script: "git diff --name-only HEAD~1 HEAD", returnStdout: true).trim()
+                    if (diff.split('\n').any { it.startsWith('apps/TT390/IT/RF/v1/Nest-df/') }) {
+                        env.NEST_DF_CHANGED = "true"
+                        echo "Changes detected in apps/TT390/IT/RF/v1/Nest-df"
+                    } else {
+                        env.NEST_DF_CHANGED = "false"
+                        echo "No changes in apps/TT390/IT/RF/v1/Nest-df. Skipping build and deployment stages."
+                    }
+                }
+            }
+        }
+
+        stage('Docker Buildx & Push') {
+            when {
+                expression { return env.NEST_DF_CHANGED == "true" }
+            }
+            steps {
+                script {
+                    docker.withRegistry("http://${DOCKERHUB_USERNAME}", '') {
+                        sh """
+                        export DOCKER_BUILDKIT=1
+                        docker buildx use default
+                        
+                        docker buildx build \
+                          --build-arg BUILDKIT_INLINE_CACHE=1 \
+                          --tag ${IMAGE_NAME}:${IMAGE_TAG} \
+                          --file apps/TT390/IT/RF/v1/Nest-df/Dockerfile \
+                          apps/TT390/IT/RF/v1/Nest-df \
+                          --push
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Update Kubernetes Deployment File') {
+            when {
+                expression { return env.NEST_DF_CHANGED == "true" }
+            }
+            steps {
+                script {
+                    sh "sed -i 's/docker_tag/${IMAGE_TAG}/g' apps/TT390/IT/RF/v1/Nest-df/kubernetes/deploymentservice.yaml"
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            when {
+                expression { return env.NEST_DF_CHANGED == "true" }
+            }
+            steps {
+                script {
+                    withKubeConfig(credentialsId: 'kubernetes-224', serverUrl: 'https://lb.kubesphere.local:6443') {
+                        sh "kubectl get ns tt390-rf-df-v1 || kubectl create ns tt390-rf-df-v1"
+                        sh "kubectl apply -f apps/TT390/IT/RF/v1/Nest-df/kubernetes/deploymentservice.yaml"
+                        sh "kubectl apply -f apps/TT390/IT/RF/v1/Nest-df/kubernetes/df-ingress.yaml"                        
+                    }
+                }
+            }
+        }
+
+        stage('Remove Previous Build Image') {
+            when {
+                expression { return env.NEST_DF_CHANGED == "true" }
+            }
+            steps {
+                script {
+                    def prevBuildNumber = env.BUILD_NUMBER.toInteger() - 1
+                    if (prevBuildNumber > 0) {
+                        sh "docker rmi -f ${IMAGE_NAME}:${prevBuildNumber} || true"
+                    }
+                }
+            }
+        }
+    }
+}
