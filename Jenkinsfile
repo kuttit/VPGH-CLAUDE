@@ -15,7 +15,7 @@ pipeline {
         GIT_CREDS         = "GIT_HUB_PAT"
         KUBE_CREDS        = "kubernetes-224"
         KUBE_NAMESPACE    = "ct308-gph001-vgph001-v1"
-        SERVICE_DIR       = "payment-rails-api"
+        SERVICE_DIR       = "."
     }
 
     stages {
