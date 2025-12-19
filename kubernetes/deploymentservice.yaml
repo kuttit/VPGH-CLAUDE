@@ -1,10 +1,10 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
-  name: ct308-gph-vgph-df-generator
-  namespace: ct308-gph-vgph-v1-df
+  name: ct308-gph001-vgph001-df-generator
+  namespace: ct308-gph001-vgph001-v1-df
   labels:
-    app: ct308-gph-vgph-df-generator
+    app: ct308-gph001-vgph001-df-generator
 spec:
   replicas: 1
   strategy:
@@ -19,15 +19,15 @@ spec:
         - setWeight: 100
   selector:
     matchLabels:
-      app: ct308-gph-vgph-df-generator
+      app: ct308-gph001-vgph001-df-generator
   template:
     metadata:
       labels:
-        app: ct308-gph-vgph-df-generator
+        app: ct308-gph001-vgph001-df-generator
     spec:
       containers:
-        - name: ct308-gph-vgph-df-generator-backend
-          image: 192.168.2.164:5000/ct308-gph-vgph-df-v1:docker_tag
+        - name: ct308-gph001-vgph001-df-generator-backend
+          image: 192.168.2.164:5000/ct308-gph001-vgph001-df-v1:docker_tag
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
@@ -42,13 +42,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: ct308-gph-vgph-df-generator
-  namespace: ct308-gph-vgph-v1-df
+  name: ct308-gph001-vgph001-df-generator
+  namespace: ct308-gph001-vgph001-v1-df
   labels:
-    app: ct308-gph-vgph-df-generator
+    app: ct308-gph001-vgph001-df-generator
 spec:
   selector:
-    app: ct308-gph-vgph-df-generator
+    app: ct308-gph001-vgph001-df-generator
   ports:
     - name: http
       protocol: TCP
