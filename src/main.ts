@@ -8,7 +8,7 @@ async function bootstrap() {
   const logger = new Logger('Bootstrap');
   const app = await NestFactory.create(AppModule);
 
-  //// Global prefix
+  // Global prefix
   const apiPrefix = process.env.API_PREFIX || 'api/v1';
   app.setGlobalPrefix(apiPrefix);
 
@@ -72,10 +72,34 @@ Rate limiting is not currently implemented. Consider implementing it for product
         'support@example.com',
       )
       .setLicense('MIT', 'https://opensource.org/licenses/MIT')
+      // Master Data
       .addTag('Countries', 'Country master data management')
       .addTag('Currencies', 'Currency master data management')
+      // Payment Rails
       .addTag('Payment Rails', 'Payment rail configuration and management')
+      .addTag('Payment Products', 'Payment products for each rail')
+      .addTag('Payment Rail Countries', 'Country associations for payment rails')
+      .addTag('Payment Rail Currencies', 'Currency associations for payment rails')
+      // Workflow Management
+      .addTag('Workflow Definitions', 'Workflow definition management')
+      .addTag('Workflow Steps', 'Individual workflow step configuration')
+      .addTag('Workflow Step Transitions', 'Transitions between workflow steps')
+      // Rules
+      .addTag('Validation Rules', 'Payment validation rule configuration')
+      .addTag('Routing Rules', 'Payment routing rule configuration')
+      // Transactions
       .addTag('Payment Transactions', 'Payment transaction processing and tracking')
+      .addTag('Transaction Parties', 'Debtor, creditor, and intermediary management')
+      // Logging & Monitoring
+      .addTag('Payment Process Logs', 'Transaction processing event logs')
+      .addTag('Payment Error Logs', 'Error logging and tracking')
+      // HITL (Human-in-the-Loop)
+      .addTag('HITL Interventions', 'Human intervention queue management')
+      .addTag('HITL Audit Trails', 'Audit trail for HITL actions')
+      // Configuration & Audit
+      .addTag('System Configurations', 'System-wide configuration management')
+      .addTag('Fee Configurations', 'Fee structure configuration')
+      .addTag('Audit Trails', 'General audit trail for all entities')
       .addServer(`http://localhost:${process.env.PORT || 3000}`, 'Local development')
       .addServer('https://api-staging.example.com', 'Staging environment')
       .addServer('https://api.example.com', 'Production environment')
@@ -105,14 +129,14 @@ Rate limiting is not currently implemented. Consider implementing it for product
     // Serve Swagger JSON
     SwaggerModule.setup('api/docs-json', app, document);
 
-    logger.log(`📚 Swagger documentation available at http://localhost:${process.env.PORT || 3000}/api/docs`);
+    logger.log(`Swagger documentation available at http://localhost:${process.env.PORT || 3000}/api/docs`);
   }
 
   const port = process.env.PORT || 3000;
   await app.listen(port);
 
-  logger.log(`🚀 Application is running on: http://localhost:${port}/${apiPrefix}`);
-  logger.log(`📚 API Documentation: http://localhost:${port}/api/docs`);
+  logger.log(`Application is running on: http://localhost:${port}/${apiPrefix}`);
+  logger.log(`API Documentation: http://localhost:${port}/api/docs`);
 }
 
 bootstrap();
