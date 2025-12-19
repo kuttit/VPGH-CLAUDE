@@ -9,12 +9,12 @@ pipeline {
 
     environment {
         REGISTRY       = "192.168.2.164:5000"
-        APP_NAME       = "ct308-gph-vgph-df-v1"
+        APP_NAME       = "ct308-gph001-vgph001-df-v1"
         IMAGE_NAME     = "${REGISTRY}/${APP_NAME}"
         IMAGE_TAG      = "${BUILD_NUMBER}"
         GIT_CREDS      = "GIT_HUB_PAT"
         KUBE_CREDS     = "kubernetes-224"
-        KUBE_NAMESPACE = "ct308-gph-vgph-v1"
+        KUBE_NAMESPACE = "ct308-gph001-vgph001-v1"
     }
 
     stages {
