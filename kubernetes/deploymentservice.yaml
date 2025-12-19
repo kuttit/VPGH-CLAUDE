@@ -2,7 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
   name: ct308-gph-vgph-df-generator
-  namespace: ct308-gph-vgph-v1
+  namespace: ct308-gph-vgph-v1-df
   labels:
     app: ct308-gph-vgph-df-generator
 spec:
@@ -43,7 +43,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: ct308-gph-vgph-df-generator
-  namespace: ct308-gph-vgph-v1
+  namespace: ct308-gph-vgph-v1-df
   labels:
     app: ct308-gph-vgph-df-generator
 spec:
