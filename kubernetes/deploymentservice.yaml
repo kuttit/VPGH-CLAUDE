@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
-  name: ct308-gph001-vgph001-df-generator
+  name: ct308-gph001-vgph001-df
   namespace: ct308-gph001-vgph001-v1-df
   labels:
     app: ct308-gph001-vgph001-df-generator
