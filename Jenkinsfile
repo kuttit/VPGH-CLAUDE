@@ -96,11 +96,11 @@ pipeline {
                     credentialsId: "${KUBE_CREDS}",
                     serverUrl: 'https://lb.kubesphere.local:6443'
                 ) {
-                    sh """
+                   sh """
                     kubectl get ns ${KUBE_NAMESPACE} || kubectl create ns ${KUBE_NAMESPACE}
                     kubectl apply -n ${KUBE_NAMESPACE} -f kubernetes/deploymentservice.yaml
                     kubectl apply -n ${KUBE_NAMESPACE} -f kubernetes/df-ingress.yaml
-                    kubectl rollout status rollout/${APP_NAME} \ -n ${KUBE_NAMESPACE}
+                    kubectl rollout status rollout/${APP_NAME} -n ${KUBE_NAMESPACE}
                     """
                 }
             }
