@@ -1,8 +1,8 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: ct308-gph-vgph-v1-ingress
-  namespace: ct308-gph-vgph-v1-df
+  name: ct308-gph001-vgph001-v1-ingress
+  namespace: ct308-gph001-vgph001-v1-df
   annotations:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/rewrite-target: /$2
@@ -12,7 +12,7 @@ spec:
   tls:
     - hosts:
         - tgadev.toruslowcode.com
-      secretName: ct308-gph-vgph-v1-tls
+      secretName: ct308-gph001-vgph001-v1-tls
   rules:
     - host: tgadev.toruslowcode.com
       http:
@@ -21,6 +21,6 @@ spec:
             pathType: ImplementationSpecific
             backend:
               service:
-                name: ct308-gph-vgph-df-generator
+                name: ct308-gph001-vgph001-df-generator
                 port:
                   number: 443
