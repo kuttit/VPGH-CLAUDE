@@ -7,7 +7,7 @@ COPY package*.json ./
 RUN npm install
  
 # Copy Prisma schema and generate client
-COPY src/erd/prisma ./prisma
+COPY payment-rails-api/prisma ./prisma
 
 COPY .env .env
 RUN npx prisma db push --accept-data-loss
