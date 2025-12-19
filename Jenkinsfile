@@ -87,37 +87,40 @@ pipeline {
             }
         }
 
-        stage('Deploy to Kubernetes') {
-            when {
-                expression { env.SERVICE_CHANGED == "true" }
-            }
-            steps {
-                withKubeConfig(
-                    credentialsId: "${KUBE_CREDS}",
-                    serverUrl: 'https://lb.kubesphere.local:6443'
-                ) {
-                    sh """
-                    set -e
+       stage('Deploy to Kubernetes') {
+        when {
+            expression { env.SERVICE_CHANGED == "true" }
+        }
+        steps {
+            withKubeConfig(
+                credentialsId: "${KUBE_CREDS}",
+                serverUrl: 'https://lb.kubesphere.local:6443'
+            ) {
+                sh """
+                set -e
 
-                    kubectl get ns ${KUBE_NAMESPACE} || kubectl create ns ${KUBE_NAMESPACE}
+                # Ensure namespace exists
+                kubectl get ns ${KUBE_NAMESPACE} || kubectl create ns ${KUBE_NAMESPACE}
 
-                    kubectl apply -n ${KUBE_NAMESPACE} \
-                      -f kubernetes/deploymentservice.yaml
+                # Apply Rollout + Service
+                kubectl apply -n ${KUBE_NAMESPACE} \
+                -f kubernetes/deploymentservice.yaml
 
-                    kubectl apply -n ${KUBE_NAMESPACE} \
-                      -f kubernetes/df-ingress.yaml
+                # Apply Ingress
+                kubectl apply -n ${KUBE_NAMESPACE} \
+                -f kubernetes/df-ingress.yaml
 
-                    # Verify Argo Rollouts plugin exists
-                    kubectl argo rollouts version
-
-                    # Wait for rollout to complete
-                    kubectl argo rollouts status ${APP_NAME} \
-                      -n ${KUBE_NAMESPACE} \
-                      --timeout 300s
-                    """
-                }
+                # Wait for Argo Rollout to become healthy (no plugin required)
+                kubectl wait \
+                --for=condition=Healthy \
+                rollout/${APP_NAME} \
+                -n ${KUBE_NAMESPACE} \
+                --timeout=300s
+                """
             }
         }
+}
+
 
         stage('Cleanup Old Image (Local Only)') {
             when {
