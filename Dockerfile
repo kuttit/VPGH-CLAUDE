@@ -1,7 +1,7 @@
 # ----------------------------------
-# Stage 1: Install dependencies
+# Stage 1: Install dependencies + Prisma generate
 # ----------------------------------
-FROM docker.io/library/node:20-alpine AS dependencies
+FROM node:20-alpine AS dependencies
 
 WORKDIR /app
 
@@ -10,13 +10,17 @@ RUN apk add --no-cache openssl
 COPY package*.json ./
 RUN npm install
 
-# Copy Prisma from src (✅ FIX)
+# ✅ Copy Prisma schema
 COPY src/prisma ./src/prisma
+
+# ✅ Generate Prisma Client (THIS WAS MISSING)
+RUN npx prisma generate
+
 
 # ----------------------------------
 # Stage 2: Build the application
 # ----------------------------------
-FROM docker.io/library/node:20-alpine AS builder
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
@@ -24,18 +28,19 @@ RUN apk add --no-cache openssl
 
 COPY package.json package-lock.json ./
 
+# ✅ Copy generated prisma client
 COPY --from=dependencies /app/node_modules ./node_modules
-COPY --from=dependencies /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=dependencies /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=dependencies /app/src/prisma ./src/prisma
 
 COPY . .
 
 RUN npm run build
 
+
 # ----------------------------------
 # Stage 3: Production
 # ----------------------------------
-FROM docker.io/library/node:20-alpine AS production
+FROM node:20-alpine AS production
 
 WORKDIR /app
 
@@ -43,14 +48,13 @@ RUN apk add --no-cache openssl
 
 ENV NODE_ENV=production
 
+# ✅ Runtime needs prisma client
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
+COPY --from=dependencies /app/src/prisma ./src/prisma
 
-# Copy Prisma schema (runtime access)
-COPY src/prisma ./src/prisma
-
-COPY .env .env
 COPY package.json ./
+COPY .env .env
 
 EXPOSE 3000
 
