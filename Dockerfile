@@ -12,7 +12,6 @@ COPY src ./src
 COPY .env ./
 
 RUN npx prisma generate
-RUN npx prisma db push --accept-data-loss
 
 
 # Stage 2: Build the application
