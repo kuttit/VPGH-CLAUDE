@@ -1,61 +1,45 @@
-# ----------------------------------
-# Stage 1: Install dependencies + Prisma generate
-# ----------------------------------
-FROM node:20-alpine AS dependencies
-
+# Stage 1: Install dependencies
+FROM docker.io/library/node:20-alpine AS dependencies
 WORKDIR /app
-
-RUN apk add --no-cache openssl
-
+ 
+# Copy package files and install dependencies
 COPY package*.json ./
 RUN npm install
+ 
+# Copy Prisma schema and generate client
+COPY src/erd/prisma ./prisma
 
-# ✅ Copy Prisma schema
-COPY src/prisma ./src/prisma
-
-# ✅ Generate Prisma Client (THIS WAS MISSING)
-RUN npx prisma generate
+COPY .env .env
+RUN npx prisma db push --accept-data-loss
 
 
-# ----------------------------------
 # Stage 2: Build the application
-# ----------------------------------
-FROM node:20-alpine AS builder
-
+FROM docker.io/library/node:20-alpine AS builder
 WORKDIR /app
-
-RUN apk add --no-cache openssl
-
+ 
 COPY package.json package-lock.json ./
-
-# ✅ Copy generated prisma client
+ 
 COPY --from=dependencies /app/node_modules ./node_modules
-COPY --from=dependencies /app/src/prisma ./src/prisma
-
+ 
+COPY --from=dependencies /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=dependencies /app/node_modules/@prisma ./node_modules/@prisma
 COPY . .
-
+ 
+# Build the TypeScript code
 RUN npm run build
-
-
-# ----------------------------------
-# Stage 3: Production
-# ----------------------------------
-FROM node:20-alpine AS production
-
+ 
+# Stage 3: Final stage - Run the application
+FROM docker.io/library/node:20-alpine AS production
+ 
 WORKDIR /app
-
-RUN apk add --no-cache openssl
-
-ENV NODE_ENV=production
-
-# ✅ Runtime needs prisma client
+ 
+# Copy production dependencies and the built application
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
-COPY --from=dependencies /app/src/prisma ./src/prisma
-
-COPY package.json ./
 COPY .env .env
-
+ 
+# Expose the port
 EXPOSE 3000
-
-CMD ["node", "dist/main.js"]
+ 
+# Start the application
+CMD ["node", "dist/main"]
