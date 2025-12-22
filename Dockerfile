@@ -6,10 +6,12 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
  
-# Copy Prisma schema and generate client
-COPY src/prisma ./prisma
+# 🔴 MUST copy prisma + src
+COPY prisma ./prisma
+COPY src ./src
+COPY .env ./
 
-COPY .env .env
+RUN npx prisma generate
 RUN npx prisma db push --accept-data-loss
 
 
