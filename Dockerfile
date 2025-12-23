@@ -1,46 +1,42 @@
-# Stage 1: Install dependencies and generate Prisma client
-FROM node:20-alpine AS dependencies
-WORKDIR /app
-
-COPY package*.json ./
-RUN npm install
-
-COPY prisma ./prisma
-COPY src ./src
-COPY .env ./
-
-RUN npx prisma generate
-
-# Stage 2: Build the application
+# ----------------------------
+# 1️⃣ Builder stage
+# ----------------------------
 FROM node:20-alpine AS builder
 WORKDIR /app
 
+# Copy configs FIRST
 COPY package*.json ./
+COPY nest-cli.json tsconfig*.json ./
+COPY prisma ./prisma
 
-# Copy installed node_modules & Prisma client files from dependencies stage
-COPY --from=dependencies /app/node_modules ./node_modules
-COPY --from=dependencies /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=dependencies /app/node_modules/@prisma ./node_modules/@prisma
+RUN npm install
 
-COPY . .
+# Generate Prisma client
+RUN npx prisma generate
 
+# Copy source and build
+COPY src ./src
 RUN npm run build
 
-# Stage 3: Final stage - Production image
-FROM node:20-alpine AS production
+
+# ----------------------------
+# 2️⃣ Production stage
+# ----------------------------
+FROM node:20-alpine
 WORKDIR /app
 
-# Copy node_modules and Prisma client files from dependencies
-COPY --from=dependencies /app/node_modules ./node_modules
-COPY --from=dependencies /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=dependencies /app/node_modules/@prisma ./node_modules/@prisma
+ENV NODE_ENV=production
 
-# Copy built app from builder
+COPY package*.json ./
+RUN npm install --omit=dev
+
+# Copy Prisma client
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder /app/prisma ./prisma
+
+# Copy built app
 COPY --from=builder /app/dist ./dist
 
-# Copy environment file
-COPY .env .env
-
 EXPOSE 3000
-
 CMD ["node", "dist/main.js"]
