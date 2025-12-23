@@ -4,18 +4,25 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-# Copy configs FIRST
+# Install OpenSSL (required by Prisma)
+RUN apk add --no-cache openssl
+
+# Copy configs
 COPY package*.json ./
 COPY nest-cli.json tsconfig*.json ./
-COPY prisma ./prisma
+
+# Copy Prisma schema EXACTLY where package.json expects it
+COPY src/prisma ./src/prisma
 
 RUN npm install
 
 # Generate Prisma client
 RUN npx prisma generate
 
-# Copy source and build
+# Copy source code
 COPY src ./src
+
+# Build NestJS
 RUN npm run build
 
 
@@ -27,15 +34,17 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
+RUN apk add --no-cache openssl
+
 COPY package*.json ./
 RUN npm install --omit=dev
 
-# Copy Prisma client
+# Prisma client
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/src/prisma ./src/prisma
 
-# Copy built app
+# Built app
 COPY --from=builder /app/dist ./dist
 
 EXPOSE 3000
